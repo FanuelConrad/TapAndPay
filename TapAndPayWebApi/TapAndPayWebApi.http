@@ -1,0 +1,6 @@
+@TapAndPayWebApi_HostAddress = http://localhost:5030
+
+GET {{TapAndPayWebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
