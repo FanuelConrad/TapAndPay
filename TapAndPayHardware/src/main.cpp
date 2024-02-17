@@ -1,20 +1,7 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 /*
- * --------------------------------------------------------------------------------------------------------------------
- * Example sketch/program showing how to read new NUID from a PICC to serial.
- * --------------------------------------------------------------------------------------------------------------------
- * This is a MFRC522 library example; for further details and other examples see: https://github.com/miguelbalboa/rfid
- *
- * Example sketch/program showing how to the read data from a PICC (that is: a RFID Tag or Card) using a MFRC522 based RFID
- * Reader on the Arduino SPI interface.
- *
- * When the Arduino and the MFRC522 module are connected (see the pin layout below), load this sketch into Arduino IDE
- * then verify/compile and upload it. To see the output: use Tools, Serial Monitor of the IDE (hit Ctrl+Shft+M). When
- * you present a PICC (that is: a RFID Tag or Card) at reading distance of the MFRC522 Reader/PCD, the serial output
- * will show the type, and the NUID if a new card has been detected. Note: you may see "Timeout in communication" messages
- * when removing the PICC from reading distance too early.
- *
- * @license Released into the public domain.
  *
  * Typical pin layout used:
  * -----------------------------------------------------------------------------------------
@@ -33,6 +20,10 @@
 
 #include <SPI.h>
 #include <MFRC522.h>
+
+const char *ssid = "Limachain";
+const char *password = "Limachain@2023";
+const char *apiUrl = "http://localhost:5030/StudentData";
 
 #define SS_PIN 5
 #define RST_PIN 27
@@ -115,6 +106,29 @@ void updateBalance(byte *uid, byte uidLength, int newBalance)
   }
 }
 
+void sendUIDToAPI(String uid) {
+  HTTPClient http;
+
+  http.begin(apiUrl);
+  http.addHeader("Content-Type", "application/json");
+
+  String requestBody = "{\"admissionNumber\": \"15637\", \"rfiD_UID\": \"123455\"}";
+
+  int httpResponseCode = http.POST(requestBody);
+
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    String response = http.getString();
+    Serial.println(response);
+  } else {
+    Serial.print("HTTP Error code: ");
+    Serial.println(httpResponseCode);
+  }
+
+  http.end();
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -129,11 +143,36 @@ void setup()
   Serial.println(F("This code scan the MIFARE Classsic NUID."));
   Serial.print(F("Using the following key:"));
   printHex(key.keyByte, MFRC522::MF_KEY_SIZE);
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to the WiFi network");
 }
 
 void loop()
 {
+  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+    Serial.println("RFID card detected!");
 
+    String uidString = "";
+    for (byte i = 0; i < rfid.uid.size; i++) {
+      uidString += String(rfid.uid.uidByte[i] < 0x10 ? "0" : "");
+      uidString += String(rfid.uid.uidByte[i], HEX);
+    }
+
+    Serial.print("UID Value: ");
+    Serial.println(uidString);
+
+    sendUIDToAPI(uidString);
+
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
+  }
+/*
   // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
   if (!rfid.PICC_IsNewCardPresent())
     return;
@@ -180,10 +219,11 @@ void loop()
     Serial.println(F("Card read previously."));
 
   Serial.println(getUID());
+  sendUIDToAPI(getUID());
 
   // Halt PICC
   rfid.PICC_HaltA();
 
   // Stop encryption on PCD
-  rfid.PCD_StopCrypto1();
+  rfid.PCD_StopCrypto1();*/
 }

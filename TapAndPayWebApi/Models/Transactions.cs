@@ -2,7 +2,7 @@ namespace TapAndPayWebApi.Models
 {
     public class Transaction
     {
-        public string TransactionId { get; set; }
+        public string Id { get; set; }
         public string UserId { get; set; }
         public User User { get; set; }
         public double Amount { get; set; }

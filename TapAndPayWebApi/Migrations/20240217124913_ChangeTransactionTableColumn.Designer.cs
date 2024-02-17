@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TapAndPayWebApi.Data.Repositories;
@@ -11,9 +12,11 @@ using TapAndPayWebApi.Data.Repositories;
 namespace TapAndPayWebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240217124913_ChangeTransactionTableColumn")]
+    partial class ChangeTransactionTableColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,20 +24,6 @@ namespace TapAndPayWebApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("TapAndPayWebApi.Models.StudentData", b =>
-                {
-                    b.Property<string>("AdmissionNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RFID_UID")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("AdmissionNumber");
-
-                    b.ToTable("StudentData");
-                });
 
             modelBuilder.Entity("TapAndPayWebApi.Models.Transaction", b =>
                 {

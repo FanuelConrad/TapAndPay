@@ -11,5 +11,6 @@ namespace TapAndPayWebApi.Data.Repositories
 
         public DbSet<User> Users { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<StudentData> StudentData { get; set; }
     }
 }
